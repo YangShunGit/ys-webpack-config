@@ -4,16 +4,21 @@ const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
 const path = require('path');
 
-function resolveRoot(p) {
+function resolveRoot(p = '') {
     return path.resolve(process.cwd(), p);
 }
 
+console.log(resolveRoot())
+
 const pathObj = {
+    rootPath: resolveRoot(),
     indexPath: resolveRoot('./src/index.js'),
     distPath: resolveRoot('./dist'),
     indexHtmlPath: resolveRoot('./public/index.html'),
+    srcPath: resolveRoot('./src')
 }
 
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -125,6 +130,9 @@ module.exports = {
             },
         },
     },
+    resolve: {
+        extensions: ['.jsx', '.tsx', '.js', '.less'],
+    },
     module: {
         rules: [
             {
@@ -134,13 +142,16 @@ module.exports = {
                         type: 'asset/resource',
                     },
                     {
-                        test: /\.(js|mjs|jsx)$/i,
+                        test: /\.(js|mjs|jsx|ts|tsx)$/i,
                         exclude: /node_modules/,
                         use: {
                             loader: "babel-loader",
                             options: {
                                 presets: ['@babel/preset-env'],
                                 plugins: [isDevelopment && require.resolve('react-refresh/babel')].filter(Boolean),
+                                cacheDirectory: true,
+                                cacheCompression: false,
+                                compact: isProduction,
                             }
                         }
                     },
@@ -169,7 +180,29 @@ module.exports = {
             filename: 'css/[name].[contenthash:8].css',
             chunkFilename: 'css/[name].[contenthash:8].chunk.css',
         }),
+        // react > 16.9.0 is work
         isDevelopment && new ReactRefreshWebpackPlugin(),
-        new CaseSensitivePathsPlugin()
+        new CaseSensitivePathsPlugin(),
+        new ESLintPlugin({
+            // Plugin options
+            extensions: ['js', 'mjs', 'jsx', 'ts', 'tsx'],
+            formatter: 'stylish',
+            eslintPath: require.resolve('eslint'),
+            context: pathObj.srcPath,
+            cache: true,
+            cacheLocation: path.resolve(
+              pathObj.rootPath,
+              '.cache/.eslintcache'
+            ),
+            // ESLint class options
+            cwd: pathObj.rootPath,
+            resolvePluginsRelativeTo: __dirname,
+            baseConfig: {
+              extends: [require.resolve('eslint-config-react-app')],
+              rules: {
+                'react/react-in-jsx-scope': 'error',
+              },
+            },
+          }),
     ].filter(Boolean),
   };
