@@ -1,3 +1,5 @@
+const Paths = require('./paths');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
@@ -5,24 +7,68 @@ const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
+const AddAssetHtmlPlugin = require('add-asset-html-webpack-plugin');
 const path = require('path');
+const fs = require('graceful-fs');
 
-function resolveRoot(p = '') {
-    return path.resolve(process.cwd(), p);
-}
-
-console.log(resolveRoot())
-
-const pathObj = {
-    rootPath: resolveRoot(),
-    indexPath: resolveRoot('./src/index.js'),
-    distPath: resolveRoot('./dist'),
-    indexHtmlPath: resolveRoot('./public/index.html'),
-    srcPath: resolveRoot('./src')
-}
-
+const { resolveRoot, paths } = Paths;
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
+debugger
+// 默认入口配置
+let entry = {   
+    index: './src/index.js',
+}
+
+let HtmlPluginInstance = [];
+
+const getWebpackConfigFile = () => {
+    const webpackConfigPath = path.resolve(process.cwd(), './webpack.config.js');
+    // 单页面配置
+    if (!fs.existsSync(webpackConfigPath)) { 
+        HtmlPluginInstance.push(new HtmlWebpackPlugin({
+            inject: true,
+            filename: 'index.html',
+            template: paths.indexHtmlPath,
+        }));
+        return 
+    }
+    const data = require(webpackConfigPath)
+    // 多页面配置
+    // 设置自定义入口，及多页面时HtmlWebpackPlugin配置
+    if (data.entry) {
+        entry = {}
+        HtmlPluginInstance = []
+        for(const [key, value] of Object.entries(data.entry)){
+            entry[key] = resolveRoot(value.import)
+            let template = '';
+            if (value.template) {
+                if (fs.existsSync(value.template)) {
+                    template = value.template;
+                } else {
+                    console.error(`${value.template}=>未找到配置的html模板`)
+                }
+            } else {
+                // 取当前目录默认index.html作为模板
+                const defaultHtml = path.dirname(value.import) + '/index.html';
+                if (fs.existsSync(defaultHtml)) {
+                    template = defaultHtml;
+                } else {
+                    console.error(`在${defaultHtml}未找到默认index.html模板`)
+                }
+            }
+            template = resolveRoot(value.template)
+            HtmlPluginInstance.push(new HtmlWebpackPlugin({
+                inject: true,
+                filename: key + '.html',
+                chunks: [key],
+                template,
+            }));
+        }
+    }
+}
+
+getWebpackConfigFile()
 
 const getStyleLoader = (preProcessor) => {
     const use = [ 
@@ -53,13 +99,9 @@ const getStyleLoader = (preProcessor) => {
 
 module.exports = {
     target: ['browserslist'],
-    entry: {
-        index: {
-            import: pathObj.indexPath,
-        },
-    },
+    entry,
     output: {
-      path: pathObj.distPath,
+      path: paths.distPath,
       pathinfo: isDevelopment,   // 开发模式显示详细的路径信息
       filename: 
         isProduction 
@@ -69,7 +111,7 @@ module.exports = {
     },
     devtool: isProduction ? false : 'cheap-module-source-map',
     devServer: {
-        static: pathObj.distPath,
+        static: resolveRoot('./static'),
         hot: true,
     },
     optimization: {
@@ -119,16 +161,16 @@ module.exports = {
             new CssMinimizerPlugin(),
         ],
         runtimeChunk: 'single',       // runtime文件共享，且只会生成一个文件实例
-        moduleIds: 'deterministic',   // 为了新增文件时，缓存文件不会因为module.id变化而变化
-        splitChunks: {
-            cacheGroups: {
-                vendor: {             // 抽离第三方库
-                    test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-                    name: 'vendor',
-                    chunks: 'all',
-                },
-            },
-        },
+        // moduleIds: 'deterministic',   // 为了新增文件时，缓存文件不会因为module.id变化而变化
+        // splitChunks: {
+        //     cacheGroups: {
+        //         vendor: {             // 抽离第三方库
+        //             test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+        //             name: 'vendor',
+        //             chunks: 'all',
+        //         },
+        //     },
+        // },
     },
     resolve: {
         extensions: ['.jsx', '.tsx', '.js', '.less'],
@@ -172,10 +214,7 @@ module.exports = {
         ]
     },
     plugins: [
-        new HtmlWebpackPlugin({
-            inject: true,
-            template: pathObj.indexHtmlPath,
-        }),
+        ...HtmlPluginInstance,
         isProduction && new MiniCssExtractPlugin({
             filename: 'css/[name].[contenthash:8].css',
             chunkFilename: 'css/[name].[contenthash:8].chunk.css',
@@ -188,14 +227,14 @@ module.exports = {
             extensions: ['js', 'mjs', 'jsx', 'ts', 'tsx'],
             formatter: 'stylish',
             eslintPath: require.resolve('eslint'),
-            context: pathObj.srcPath,
+            context: paths.srcPath,
             cache: true,
             cacheLocation: path.resolve(
-              pathObj.rootPath,
+              paths.rootPath,
               '.cache/.eslintcache'
             ),
             // ESLint class options
-            cwd: pathObj.rootPath,
+            cwd: paths.rootPath,
             resolvePluginsRelativeTo: __dirname,
             baseConfig: {
               extends: [require.resolve('eslint-config-react-app')],
@@ -203,6 +242,16 @@ module.exports = {
                 'react/react-in-jsx-scope': 'error',
               },
             },
-          }),
+        }),
+        // 使用dll之后，build时间从 5168 ms  减少到 3560 ms, 增速30%左右
+        new webpack.DllReferencePlugin({
+			manifest: resolveRoot('./static/dll/vendor.manifest.json'), // eslint-disable-line
+        }),
+        // 自动注入dll文件(使用之后，打包速度又变回 5179 ms)
+        new AddAssetHtmlPlugin({ 
+            filepath: resolveRoot('./static/dll/vendor.dll.js'),
+            outputPath: '../dll',
+            publicPath: '../dll',
+        }),
     ].filter(Boolean),
   };

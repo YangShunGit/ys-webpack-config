@@ -1,6 +1,6 @@
 {
   "name": "ys-webpack-config",
-  "version": "1.0.12",
+  "version": "1.0.20",
   "description": "this is webpack config js",
   "main": "./bin/index.js",
   "bin": {
@@ -31,6 +31,7 @@
     "eslint": "^8.6.0",
     "eslint-config-react-app": "^7.0.0",
     "eslint-webpack-plugin": "^3.1.1",
+    "graceful-fs": "^4.2.9",
     "html-webpack-plugin": "^5.5.0",
     "less": "^4.1.2",
     "less-loader": "^10.2.0",
@@ -62,7 +63,8 @@
   "files": [
     "bin/",
     "readme.md",
-    "webpack.config.js"
+    "webpack.config.js",
+    "webpack.config.dll.js"
   ],
   "browserslist": {
     "production": [
