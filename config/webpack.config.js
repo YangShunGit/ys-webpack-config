@@ -1,5 +1,4 @@
 const Paths = require('./paths');
-const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
@@ -7,14 +6,19 @@ const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
-const AddAssetHtmlPlugin = require('add-asset-html-webpack-plugin');
+
+const threadLoader = require('thread-loader');
+// worker池 预热
+threadLoader.warmup({}, [
+  'babel-loader',
+]);
 const path = require('path');
 const fs = require('graceful-fs');
 
 const { resolveRoot, paths } = Paths;
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
-debugger
+
 // 默认入口配置
 let entry = {   
     index: './src/index.js',
@@ -102,7 +106,7 @@ module.exports = {
     entry,
     output: {
       path: paths.distPath,
-      pathinfo: isDevelopment,   // 开发模式显示详细的路径信息
+    //   pathinfo: isDevelopment,   // 开发模式显示详细的路径信息
       filename: 
         isProduction 
         ? 'js/[name].[contenthash:8].js' 
@@ -111,7 +115,7 @@ module.exports = {
     },
     devtool: isProduction ? false : 'cheap-module-source-map',
     devServer: {
-        static: resolveRoot('./static'),
+        static: resolveRoot('./dist'),
         hot: true,
     },
     optimization: {
@@ -156,24 +160,33 @@ module.exports = {
                   ascii_only: true,
                 },
               },
+              extractComments: false,  // 是否将注释剥离到单独的文件中
             }),
             // This is only used in production mode
             new CssMinimizerPlugin(),
         ],
         runtimeChunk: 'single',       // runtime文件共享，且只会生成一个文件实例
-        // moduleIds: 'deterministic',   // 为了新增文件时，缓存文件不会因为module.id变化而变化
-        // splitChunks: {
-        //     cacheGroups: {
-        //         vendor: {             // 抽离第三方库
-        //             test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-        //             name: 'vendor',
-        //             chunks: 'all',
-        //         },
-        //     },
-        // },
+        removeAvailableModules: isProduction,
+        removeEmptyChunks: isProduction,
+        moduleIds: 'deterministic',   // 为了新增文件时，缓存文件不会因为module.id变化而变化
+        splitChunks: {
+            cacheGroups: {
+                vendor: {             // 抽离第三方库
+                    test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+                    name: 'vendor',
+                    chunks: 'all',
+                },
+            },
+        },
     },
     resolve: {
         extensions: ['.jsx', '.tsx', '.js', '.less'],
+    },
+    cache: {
+        type: 'filesystem',
+        buildDependencies: {
+            config: [__filename],
+        },
     },
     module: {
         rules: [
@@ -186,24 +199,29 @@ module.exports = {
                     {
                         test: /\.(js|mjs|jsx|ts|tsx)$/i,
                         exclude: /node_modules/,
-                        use: {
-                            loader: "babel-loader",
-                            options: {
-                                presets: ['@babel/preset-env'],
-                                plugins: [isDevelopment && require.resolve('react-refresh/babel')].filter(Boolean),
-                                cacheDirectory: true,
-                                cacheCompression: false,
-                                compact: isProduction,
+                        use: [
+                            "thread-loader",
+                            {
+                                loader: "babel-loader",
+                                options: {
+                                    presets: ['@babel/preset-env'],
+                                    plugins: [isDevelopment && require.resolve('react-refresh/babel')].filter(Boolean),
+                                    cacheDirectory: true,
+                                    cacheCompression: false,
+                                    compact: isProduction,
+                                }
                             }
-                        }
+                        ]
                     },
                     {
                         test: /\.css$/i,
-                        use: getStyleLoader()
+                        use: getStyleLoader(),
+                        sideEffects: true,
                     },
                     {
                         test: /\.less$/i,
-                        use: getStyleLoader('less-loader')
+                        use: getStyleLoader('less-loader'),
+                        sideEffects: true,
                     },
                     {
                         exclude: [/^$/, /\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/],
@@ -242,16 +260,6 @@ module.exports = {
                 'react/react-in-jsx-scope': 'error',
               },
             },
-        }),
-        // 使用dll之后，build时间从 5168 ms  减少到 3560 ms, 增速30%左右
-        new webpack.DllReferencePlugin({
-			manifest: resolveRoot('./static/dll/vendor.manifest.json'), // eslint-disable-line
-        }),
-        // 自动注入dll文件(使用之后，打包速度又变回 5179 ms)
-        new AddAssetHtmlPlugin({ 
-            filepath: resolveRoot('./static/dll/vendor.dll.js'),
-            outputPath: '../dll',
-            publicPath: '../dll',
         }),
     ].filter(Boolean),
   };

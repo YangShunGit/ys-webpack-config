@@ -3,8 +3,11 @@
 **2.less**  
 **3.typescript**  
 **4.eslint**   
-**5.单页面or多页面**
-**6.dll文件优化**
+**5.单页面or多页面**   
+**6.dll文件优化，有持久化缓存所以废弃**  
+**7.worker池(thread-loader)优化**  
+**8.持久化缓存cache**  
+**9.Tree Shaking生产模式默认启用**
 
 ## 一、Install with npm:
 
@@ -19,9 +22,8 @@ npm install --save react react-dom
 ```bash
     "scripts": {
         "start": "yang start",
-        "start-open": "yang start --open",
+        "start:open": "yang start --open",
         "build": "yang build",
-        "dll": "yang dll"
     },
     "engines": {
         "node": ">=10.13.0"
@@ -73,7 +75,7 @@ module.exports = {
 ## 四、run with npm
 
 ```bash
-npm run start-open
+npm run start:open
 ```
 
 

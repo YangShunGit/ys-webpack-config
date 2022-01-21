@@ -9,8 +9,7 @@ function resolveRoot(p = '') {
 const paths = {
     rootPath: resolveRoot(),
     indexPath: resolveRoot('./src/index.js'),
-    distPath: resolveRoot('./static/dist'),
-    dllPath: resolveRoot('./static/dll'),
+    distPath: resolveRoot('./dist'),
     indexHtmlPath: resolveRoot('./public/index.html'),
     srcPath: resolveRoot('./src')
 }

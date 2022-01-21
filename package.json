@@ -1,6 +1,6 @@
 {
   "name": "ys-webpack-config",
-  "version": "1.0.20",
+  "version": "1.0.22",
   "description": "this is webpack config js",
   "main": "./bin/index.js",
   "bin": {
@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "start": "node ./bin/index.js start",
-    "start-open": "node ./bin/index.js start --open",
+    "start:open": "node ./bin/index.js start --open",
     "build": "node ./bin/index.js build"
   },
   "author": "yangshunnpm",
@@ -41,6 +41,7 @@
     "react-refresh": "^0.11.0",
     "style-loader": "^3.3.1",
     "terser-webpack-plugin": "^5.3.0",
+    "thread-loader": "^3.0.4",
     "webpack": "^5.65.0",
     "webpack-cli": "^4.9.1",
     "webpack-dev-server": "^4.7.2"
@@ -62,9 +63,8 @@
   },
   "files": [
     "bin/",
-    "readme.md",
-    "webpack.config.js",
-    "webpack.config.dll.js"
+    "config/",
+    "readme.md"
   ],
   "browserslist": {
     "production": [
