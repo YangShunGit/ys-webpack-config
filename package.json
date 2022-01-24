@@ -1,81 +1,81 @@
 {
-  "name": "ys-webpack-config",
-  "version": "1.0.22",
-  "description": "this is webpack config js",
-  "main": "./bin/index.js",
-  "bin": {
-    "yang": "./bin/index.js"
-  },
-  "keywords": [
-    "webpack.config.js",
-    "webpackV5"
-  ],
-  "scripts": {
-    "start": "node ./bin/index.js start",
-    "start:open": "node ./bin/index.js start --open",
-    "build": "node ./bin/index.js build"
-  },
-  "author": "yangshunnpm",
-  "license": "ISC",
-  "dependencies": {
-    "@babel/core": "^7.16.7",
-    "@babel/preset-env": "^7.16.7",
-    "@babel/preset-react": "^7.16.7",
-    "@babel/preset-typescript": "^7.16.7",
-    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.4",
-    "babel-loader": "^8.2.3",
-    "case-sensitive-paths-webpack-plugin": "^2.4.0",
-    "cross-spawn": "^7.0.3",
-    "css-loader": "^6.5.1",
-    "css-minimizer-webpack-plugin": "^3.3.1",
-    "eslint": "^8.6.0",
-    "eslint-config-react-app": "^7.0.0",
-    "eslint-webpack-plugin": "^3.1.1",
-    "graceful-fs": "^4.2.9",
-    "html-webpack-plugin": "^5.5.0",
-    "less": "^4.1.2",
-    "less-loader": "^10.2.0",
-    "mini-css-extract-plugin": "^2.4.6",
-    "postcss-loader": "^6.2.1",
-    "postcss-preset-env": "^7.2.0",
-    "react-refresh": "^0.11.0",
-    "style-loader": "^3.3.1",
-    "terser-webpack-plugin": "^5.3.0",
-    "thread-loader": "^3.0.4",
-    "webpack": "^5.65.0",
-    "webpack-cli": "^4.9.1",
-    "webpack-dev-server": "^4.7.2"
-  },
-  "devDependencies": {
-    "dva": "^2.4.1",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
-  },
-  "engines": {
-    "node": ">=10.13.0"
-  },
-  "babel": {
-    "presets": [
-      "@babel/preset-env",
-      "@babel/preset-react",
-      "@babel/preset-typescript"
-    ]
-  },
-  "files": [
-    "bin/",
-    "config/",
-    "readme.md"
-  ],
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
+    "name": "ys-webpack-config",
+    "version": "1.0.30",
+    "description": "this is webpack config js",
+    "main": "./bin/index.js",
+    "bin": {
+        "yang": "./bin/index.js"
+    },
+    "keywords": [
+        "webpack.config.js",
+        "webpackV5"
     ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
+    "scripts": {
+        "start": "node ./bin/index.js start",
+        "start:open": "node ./bin/index.js start --open",
+        "build": "node ./bin/index.js build"
+    },
+    "author": "yangshunnpm",
+    "license": "ISC",
+    "dependencies": {
+        "@babel/core": "^7.16.7",
+        "@babel/preset-env": "^7.16.7",
+        "@babel/preset-react": "^7.16.7",
+        "@babel/preset-typescript": "^7.16.7",
+        "@pmmmwh/react-refresh-webpack-plugin": "^0.5.4",
+        "babel-loader": "^8.2.3",
+        "case-sensitive-paths-webpack-plugin": "^2.4.0",
+        "cross-spawn": "^7.0.3",
+        "css-loader": "^6.5.1",
+        "css-minimizer-webpack-plugin": "^3.3.1",
+        "eslint": "^8.6.0",
+        "eslint-config-react-app": "^7.0.0",
+        "eslint-webpack-plugin": "^3.1.1",
+        "graceful-fs": "^4.2.9",
+        "html-webpack-plugin": "^5.5.0",
+        "less": "^4.1.2",
+        "less-loader": "^10.2.0",
+        "mini-css-extract-plugin": "^2.4.6",
+        "postcss-loader": "^6.2.1",
+        "postcss-preset-env": "^7.2.0",
+        "react-refresh": "^0.11.0",
+        "style-loader": "^3.3.1",
+        "terser-webpack-plugin": "^5.3.0",
+        "thread-loader": "^3.0.4",
+        "webpack": "^5.65.0",
+        "webpack-cli": "^4.9.1",
+        "webpack-dev-server": "^4.7.2"
+    },
+    "devDependencies": {
+        "dva": "^2.4.1",
+        "react": "^17.0.2",
+        "react-dom": "^17.0.2"
+    },
+    "engines": {
+        "node": ">=10.13.0"
+    },
+    "babel": {
+        "presets": [
+            "@babel/preset-env",
+            "@babel/preset-react",
+            "@babel/preset-typescript"
+        ]
+    },
+    "files": [
+        "bin/",
+        "config/",
+        "readme.md"
+    ],
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    }
 }

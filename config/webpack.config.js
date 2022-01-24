@@ -172,7 +172,7 @@ module.exports = {
         splitChunks: {
             cacheGroups: {
                 vendor: {             // 抽离第三方库
-                    test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+                    test: /[\\/]node_modules[\\/](react|react-dom|react-redux|react-router-dom|@reduxjs[\\/]toolkit)[\\/]/,
                     name: 'vendor',
                     chunks: 'all',
                 },
@@ -180,7 +180,7 @@ module.exports = {
         },
     },
     resolve: {
-        extensions: ['.jsx', '.tsx', '.js', '.less'],
+        extensions: ['.jsx', '.tsx', '.js', '.ts'],
     },
     cache: {
         type: 'filesystem',
