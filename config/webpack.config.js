@@ -6,6 +6,7 @@ const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
+const WorkboxPlugin = require('workbox-webpack-plugin');
 
 const threadLoader = require('thread-loader');
 // worker池 预热
@@ -26,6 +27,8 @@ let entry = {
 
 let HtmlPluginInstance = [];
 
+let webpackConfig = {};
+
 const getWebpackConfigFile = () => {
     const webpackConfigPath = path.resolve(process.cwd(), './webpack.config.js');
     // 单页面配置
@@ -37,13 +40,13 @@ const getWebpackConfigFile = () => {
         }));
         return 
     }
-    const data = require(webpackConfigPath)
+    webpackConfig = require(webpackConfigPath)
     // 多页面配置
     // 设置自定义入口，及多页面时HtmlWebpackPlugin配置
-    if (data.entry) {
+    if (webpackConfig.entry) {
         entry = {}
         HtmlPluginInstance = []
-        for(const [key, value] of Object.entries(data.entry)){
+        for(const [key, value] of Object.entries(webpackConfig.entry)){
             entry[key] = resolveRoot(value.import)
             let template = '';
             if (value.template) {
@@ -69,6 +72,12 @@ const getWebpackConfigFile = () => {
                 template,
             }));
         }
+    } else {
+        HtmlPluginInstance.push(new HtmlWebpackPlugin({
+            inject: true,
+            filename: 'index.html',
+            template: paths.indexHtmlPath,
+        }));
     }
 }
 
@@ -260,6 +269,12 @@ module.exports = {
                 'react/react-in-jsx-scope': 'error',
               },
             },
+        }),
+        webpackConfig.useWorkbox && new WorkboxPlugin.GenerateSW({
+            // 这些选项帮助快速启用 ServiceWorkers
+            // 不允许遗留任何“旧的” ServiceWorkers
+            clientsClaim: true,
+            skipWaiting: true,
         }),
     ].filter(Boolean),
   };

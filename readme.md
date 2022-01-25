@@ -7,7 +7,8 @@
 **6.dll文件优化，有持久化缓存所以废弃**  
 **7.worker池(thread-loader)优化**  
 **8.持久化缓存cache**  
-**9.Tree Shaking生产模式默认启用**
+**9.Tree Shaking生产模式默认启用**  
+**10.支持Workbox离线应用**
 
 ## 一、Install with npm:
 
@@ -67,9 +68,31 @@ module.exports = {
             import: './src/a.js', 
             template: './public/a.html' 
         } 
-    } 
+    }
 }
 ```
+
+## 四、启用离线应用Workbox
+1.webpack.config.js 添加 useWorkbox配置
+```bash
+module.exports = {
+    useWorkbox: true
+}
+```
+
+2.入口js文件添加如下代码
+```bash
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').then(registration => {
+      console.log('SW registered: ', registration);
+    }).catch(registrationError => {
+      console.log('SW registration failed: ', registrationError);
+    });
+  });
+}
+```
+
 
 
 ## 四、run with npm
