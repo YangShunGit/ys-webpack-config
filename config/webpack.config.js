@@ -16,6 +16,7 @@ threadLoader.warmup({}, [
 const path = require('path');
 const fs = require('graceful-fs');
 
+
 const { resolveRoot, paths } = Paths;
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
@@ -29,6 +30,7 @@ let HtmlPluginInstance = [];
 
 let webpackConfig = {};
 
+// 获取自定义webpack配置
 const getWebpackConfigFile = () => {
     const webpackConfigPath = path.resolve(process.cwd(), './webpack.config.js');
     // 单页面配置
@@ -110,6 +112,9 @@ const getStyleLoader = (preProcessor) => {
     return use;
 }
 
+
+const { name } = require(path.join(process.cwd(), './package.json'));
+
 module.exports = {
     target: ['browserslist'],
     entry,
@@ -121,11 +126,23 @@ module.exports = {
         ? 'js/[name].[contenthash:8].js' 
         : 'js/[name].bundle.js',
       clean: true,
+
+      // 兼容微前端配置
+      library: `${name}_[name]`,
+      libraryTarget: 'umd', // 把微应用打包成 umd 库格式
+      chunkLoadingGlobal: `webpackJsonp_${name}`,
+      globalObject: 'window'
     },
     devtool: isProduction ? false : 'cheap-module-source-map',
     devServer: {
         static: resolveRoot('./dist'),
         hot: true,
+        historyApiFallback: true,   // 使用history mode时需要设置为true
+        // 兼容微前端配置
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+        },
+        ...webpackConfig?.devServer
     },
     optimization: {
         minimize: isProduction,
@@ -202,10 +219,6 @@ module.exports = {
             {
                 oneOf: [
                     {
-                        test: /\.(png|svg|jpg|jpeg|gif)$/i,
-                        type: 'asset/resource',
-                    },
-                    {
                         test: /\.(js|mjs|jsx|ts|tsx)$/i,
                         exclude: /node_modules/,
                         use: [
@@ -231,6 +244,10 @@ module.exports = {
                         test: /\.less$/i,
                         use: getStyleLoader('less-loader'),
                         sideEffects: true,
+                    },
+                    {
+                        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+                        type: 'asset/resource',
                     },
                     {
                         exclude: [/^$/, /\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/],
